@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEDxVIPS | Premium Spin The Wheel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            background-image: url('https://i.ibb.co/27Gj7hWT/tedxbg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.6) blur(4px);
+            z-index: -1;
+        }
+
+        #gameTile {
+            background: rgba(28, 28, 38, 0.7);
+            backdrop-filter: blur(12px) saturate(150%);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.125);
+            padding: 2rem;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .wheel-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 65%);
+            filter: blur(20px);
+        }
+
+        .wheel-container {
+            position: relative;
+            padding: 15px; /* Reduced padding to make border more prominent */
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+            box-shadow: 
+                -10px -10px 30px rgba(70, 70, 70, 0.1), 
+                10px 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 0 15px rgba(0,0,0,0.7),
+                0 0 15px rgba(255, 215, 0, 0.5); /* Gold glow */
+            border: 4px solid #ffd700; /* Thin golden border */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pointer-container {
+            position: absolute;
+            top: -15px; /* Adjusted position */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5));
+        }
+       
+        .pointer {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #eb0028; 
+            position: relative;
+        }
+        
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -36px;
+            left: -10px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 3px rgba(0,0,0,0.4);
+        }
+
+        #spinBtn {
+            color: #ffffff;
+            background: linear-gradient(145deg, #e60023, #b8001c);
+            border: none;
+            border-radius: 50px;
+            box-shadow: -6px -6px 12px rgba(255, 255, 255, 0.1),
+                        6px 6px 12px rgba(0, 0, 0, 0.7),
+                        inset -2px -2px 5px rgba(0, 0, 0, 0.5),
+                        inset 2px 2px 5px rgba(255, 255, 255, 0.2);
+            transition: all 0.15s ease-in-out;
+        }
+        #spinBtn:disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #spinBtn:not(:disabled):active {
+            box-shadow: inset -4px -4px 10px rgba(0, 0, 0, 0.6),
+                        inset 4px 4px 10px rgba(255, 255, 255, 0.1);
+            transform: translateY(2px);
+        }
+
+        canvas#wheelCanvas {
+            transition: transform 6s cubic-bezier(0.2, 0.9, 0.3, 1);
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body class="text-white p-4">
+
+    <canvas id="confettiCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-[100]"></canvas>
+
+    <div id="gameTile">
+        <div class="main-container w-full max-w-xl mx-auto text-center">
+            <header class="mb-6">
+                <h1 class="text-5xl md:text-6xl font-extrabold uppercase tracking-wide" style="text-shadow: 0 0 15px rgba(255, 43, 6, 0.5);">
+                    <span class="text-red-600">TEDx</span>VIPS
+                </h1>
+                <p class="text-xl font-light text-gray-200 mt-2">Spin The Wheel To Win A Prize!</p>
+            </header>
+    
+            <div class="relative w-[320px] h-[320px] md:w-[500px] md:h-[500px] mx-auto mb-10 flex items-center justify-center">
+                <div class="pointer-container">
+                    <div class="pointer"></div>
+                </div>
+                <div class="wheel-container w-full h-full">
+                    <div class="wheel-glow"></div>
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                </div>
+            </div>
+            
+            <button id="spinBtn" class="font-bold text-3xl px-16 py-5">
+                SPIN
+            </button>
+        </div>
+    </div>
+
+
+    <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div id="modalContent" class="bg-gray-900 border-2 border-red-600 text-white rounded-2xl shadow-2xl p-8 text-center max-w-sm w-full transform scale-95 transition-all duration-300 ease-out" style="box-shadow: 0 0 30px rgba(235, 0, 40, 0.5);">
+            <h2 id="modalTitle" class="text-3xl font-bold mb-4">Congratulations!</h2>
+            <p class="text-lg text-gray-300 mb-6">You won:</p>
+            <p id="prize" class="text-4xl font-black text-red-500 mb-8 break-words"></p>
+            <button id="closeModalBtn" class="bg-red-600 text-white font-bold px-8 py-3 rounded-full hover:bg-red-700 transition-colors duration-200">
+                Awesome!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultModal = document.getElementById('resultModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const prizeText = document.getElementById('prize');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+
+        const sectors = [
+            { label: 'eazy diner', color: ['#eb0028', '#c00020'], logoUrl: 'https://i.ibb.co/qFj12npq/images-q-tbn-ANd9-Gc-T5-Yw1q-ETlpxa-Fcv3u9c-Af-Zabx-Tqy7w-PPXsotk9-JAn-QRj-DX0-AMHWsgx-Zy64aa-O-wi-T.jpg' },
+            { label: 'Plum', color: ['#3a3a3a', '#1e1e1e'], logoUrl: 'https://i.ibb.co/yFcQpmK3/plum-body-lovin.png' },
+            { label: 'Burrah', color: ['#ffffff', '#e0e0e0'], logoUrl: 'https://i.ibb.co/jvpp7GYV/Screenshot-2025-09-07-at-5-17-53-PM.png' },
+            { label: 'Kitkat', color: ['#eb0028', '#c00020'], logoUrl: 'https://i.ibb.co/LzsN64qY/kit-kat-logo-vector-free-download-11574235319fp2rsxnflf.png' },
+            { label: 'Better Luck Next Time', color: ['#3a3a3a', '#1e1e1e'], logoUrl: 'https://i.ibb.co/r2jPxYfv/3d-better-luck-next-time-600nw-2504793501.jpg' },
+            { label: 'Iota water', color: ['#ffffff', '#e0e0e0'], logoUrl: 'https://i.ibb.co/4Z61CvRx/PHOTO-2525-09-03-07-26-55.jpg' }
+        ];
+
+        const textColors = ['#FFFFFF', '#FFFFFF', '#111827', '#FFFFFF', '#FFFFFF', '#111827'];
+        
+        const numSectors = sectors.length;
+        const arcSize = (2 * Math.PI) / numSectors;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) - 15; // Adjusted radius for text
+        
+        let isSpinning = false;
+        let currentRotationDegrees = 0;
+        let loadedImages = [];
+
+        const preloadImages = (callback) => {
+            let imagesToLoad = sectors.length;
+            if (imagesToLoad === 0) {
+                callback();
+                return;
+            }
+            sectors.forEach((sector, index) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.onload = () => {
+                    imagesToLoad--;
+                    if (imagesToLoad === 0) {
+                        callback();
+                    }
+                };
+                img.onerror = () => {
+                    console.error("Could not load image:", sector.logoUrl);
+                    loadedImages[index] = null; // Mark as failed
+                    imagesToLoad--;
+                    if (imagesToLoad === 0) {
+                        callback();
+                    }
+                };
+                img.src = sector.logoUrl;
+                loadedImages[index] = img;
+            });
+        };
+
+
+        const drawWheel = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Rotate context so 0 degrees is at the top
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(-Math.PI / 2);
+            ctx.translate(-centerX, -centerY);
+
+            sectors.forEach((sector, i) => {
+                const startAngle = i * arcSize;
+                const endAngle = startAngle + arcSize;
+                
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                gradient.addColorStop(0, sector.color[0]);
+                gradient.addColorStop(1, sector.color[1]);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.lineTo(centerX, centerY);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                ctx.save();
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle, false);
+                ctx.lineTo(centerX, centerY);
+                ctx.stroke();
+                ctx.restore();
+
+                const angle = startAngle + arcSize / 2;
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle);
+                
+                // Draw Logo
+                const logo = loadedImages[i];
+                if (logo && logo.complete && logo.naturalHeight !== 0) {
+                    const logoSize = 80; // Increased size
+                    const logoRadius = radius * 0.65; // Moved outwards
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(logoRadius, 0, logoSize / 2 + 2, 0, Math.PI * 2, true);
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.fill();
+                    ctx.clip();
+                    ctx.drawImage(logo, logoRadius - logoSize / 2, -logoSize / 2, logoSize, logoSize);
+                    ctx.restore();
+                } else {
+                    // Draw Text if logo fails or is missing
+                    ctx.fillStyle = textColors[i];
+                    ctx.font = 'bold 16px Poppins, sans-serif';
+                    ctx.textAlign = 'center';
+                    const textRadius = radius * 0.65; // Match logo position
+                    sector.label.split(' ').forEach((word, j) => {
+                         ctx.fillText(word, textRadius, (j - 0.5) * 20);
+                    });
+                }
+                
+                ctx.restore();
+            });
+            ctx.restore(); // Restore original context rotation
+
+            // Center hub
+            const hubGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 35);
+            hubGradient.addColorStop(0, '#d4af37');
+            hubGradient.addColorStop(0.5, '#ffd700');
+            hubGradient.addColorStop(1, '#b8860b');
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 35, 0, 2 * Math.PI);
+            ctx.fillStyle = hubGradient;
+            ctx.fill();
+            ctx.strokeStyle = '#a1791a';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        };
+        
+        const spin = () => {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.disabled = true;
+
+            const randomExtraDegrees = Math.random() * 360;
+            const fullSpins = Math.floor(Math.random() * 5) + 8;
+            const spinAmountDegrees = (fullSpins * 360) + randomExtraDegrees;
+
+            const finalRotationDegrees = currentRotationDegrees + spinAmountDegrees;
+
+            canvas.style.transform = `rotate(${finalRotationDegrees}deg)`;
+            
+            setTimeout(() => {
+                const restingAngle = finalRotationDegrees % 360;
+                
+                // Corrected Winning Logic
+                const winningAngle = (360 - restingAngle) % 360;
+                const degreesPerSector = 360 / numSectors;
+                const winningIndex = Math.floor(winningAngle / degreesPerSector);
+                
+                showResult(sectors[winningIndex]);
+
+                isSpinning = false;
+                spinBtn.disabled = false;
+                
+                currentRotationDegrees = restingAngle;
+                canvas.style.transition = 'none';
+                canvas.style.transform = `rotate(${currentRotationDegrees}deg)`;
+                
+                setTimeout(() => {
+                    canvas.style.transition = 'transform 6s cubic-bezier(0.2, 0.9, 0.3, 1)';
+                }, 20);
+
+            }, 6000);
+        };
+
+        const showResult = (winner) => {
+            prizeText.textContent = winner.label.replace(/\n/g, ' ');
+            const isLoser = winner.label.includes('Better Luck');
+
+            if (isLoser) {
+                modalTitle.textContent = 'Oh No!';
+            } else {
+                modalTitle.textContent = 'Congratulations!';
+                launchConfetti();
+            }
+            resultModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+        };
+
+        const hideResult = () => {
+            resultModal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.add('scale-95');
+        };
+
+        let confettiParticles = [];
+        const launchConfetti = () => {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            const particleCount = 200;
+            const colors = ['#eb0028', '#ffffff', '#ffd700', '#000000'];
+            confettiParticles = [];
+            for (let i = 0; i < particleCount; i++) {
+                confettiParticles.push({
+                    x: confettiCanvas.width / 2,
+                    y: confettiCanvas.height / 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    radius: Math.random() * 4 + 2,
+                    vx: Math.random() * 12 - 6,
+                    vy: Math.random() * -18 - 6,
+                    alpha: 1,
+                    gravity: 0.25
+                });
+            }
+            animateConfetti();
+        };
+
+        const animateConfetti = () => {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            let stillAnimating = false;
+            confettiParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.alpha -= 0.005;
+
+                if (p.alpha > 0) {
+                    stillAnimating = true;
+                    confettiCtx.globalAlpha = p.alpha;
+                    confettiCtx.beginPath();
+                    confettiCtx.fillStyle = p.color;
+                    confettiCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    confettiCtx.fill();
+                }
+            });
+
+            if (stillAnimating) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confettiParticles = [];
+            }
+        };
+
+        spinBtn.addEventListener('click', spin);
+        closeModalBtn.addEventListener('click', hideResult);
+        resultModal.addEventListener('click', (e) => {
+            if (e.target === resultModal) hideResult();
+        });
+        
+        preloadImages(drawWheel);
+
+    </script>
+</body>
+</html>
+
